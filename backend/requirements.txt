@@ -1,0 +1,24 @@
+# Web Framework & Network
+fastapi
+uvicorn
+python-multipart
+requests
+httpx
+
+# Computer Vision & AI
+opencv-python
+ultralytics
+pillow
+numpy
+
+# 3D Mesh & Geometry Processing
+trimesh
+scipy
+
+# GIS & Photo Metadata
+geopy
+piexif
+folium
+
+# Hardware Communication
+pyserial

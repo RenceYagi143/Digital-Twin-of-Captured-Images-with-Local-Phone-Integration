@@ -1,0 +1,7 @@
+.venv/
+__pycache__/
+*.pyc
+storage/temp_processing/*
+storage/models_3d/*
+!.gitkeep
+.DS_Store
