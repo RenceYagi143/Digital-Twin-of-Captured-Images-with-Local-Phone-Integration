@@ -1,24 +1,46 @@
-# Web Framework & Network
+# Web Framework & Async Network
 fastapi
 uvicorn
 python-multipart
 requests
 httpx
 
-# Computer Vision & AI
+# Computer Vision, AI & Image Processing
 opencv-python
+opencv-contrib-python
 ultralytics
 pillow
 numpy
+scikit-image
+plantcv
 
-# 3D Mesh & Geometry Processing
+# 3D Mesh Geometry, Spatial Math & Raycasting
 trimesh
 scipy
+rtree
+matplotlib
 
-# GIS & Photo Metadata
+# Crop Phenology & Biophysical Simulation
+pcse
+pandas
+
+# Microclimate Physics & Weather APIs
+openmeteo-requests
+requests-cache
+retry-requests
+pvlib
+
+# GIS, Geospatial & Photo Metadata
 geopy
 piexif
 folium
+geopandas
+shapely
+pyproj
+rasterio
+xarray
+netCDF4
+pystac-client
 
 # Hardware Communication
 pyserial
