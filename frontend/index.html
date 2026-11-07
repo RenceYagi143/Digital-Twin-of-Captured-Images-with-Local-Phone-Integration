@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PineTwin · 3D digital twin for pineapple farms</title>
+<script>document.documentElement.classList.add('js')</script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="css/styles.css">
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script></head>
+<body>
+<div id="topbar"><i></i></div>
+<nav id="nav">
+  <a class="brand" href="#home"><svg viewBox="0 0 32 32" width="30" height="30"><path d="M16 1c1 3 3 4 3 6-2-1-3-1-3-1s-1 0-3 1c0-2 2-3 3-6z" fill="#a8d94f"/><ellipse cx="16" cy="20" rx="8.5" ry="11" fill="#ffc531"/><path d="M9 16l14 10M9 23l14-10M12 11l9 18M20 11l-9 18" stroke="#d99a12" stroke-width="1.2" fill="none"/></svg><span>Pine<em>Twin</em></span></a>
+  <div class="links"><a href="#home">Home</a><a href="#dashboard">Dashboard</a><a href="#twin">Real-Time Twin</a><a href="#phenology">AI Phenology</a><a href="#health">Crop Health Map</a><a href="#fields">Fields</a></div>
+  <div class="right"><select id="fieldSel" hidden title="Active field"></select><a class="btn sun" href="#fields">+ New field</a><span class="bell" title="Active alerts"><svg viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 1112 0v5l2 2H4l2-2zM10 21h4"/></svg><b id="alertCount">0</b></span></div>
+</nav>
+<main>
+<!-- ================= LANDING ================= -->
+<section class="page" id="home">
+  <div class="hero">
+    <div class="copy">
+      <span class="chip rv">🍍 Digital twin for pineapple farms</span>
+      <h1 class="rv" style="--d:.08s">Your crop, mirrored in 3D. <span class="mark">Watch it grow</span> before it does.</h1>
+      <p class="rv" style="--d:.16s">Pin any field on the map. PineTwin builds a living 3D model of it, tracks how the crop is doing, previews how it will look and grade at harvest, and tells you what to do next.</p>
+      <div class="cta rv" style="--d:.24s"><a class="btn deep big" href="#fields">Build my field twin</a><a class="btn line big" href="#features" data-scroll="features">See what's inside</a></div>
+    </div>
+    <div class="scene rv" style="--d:.2s">
+      <svg viewBox="0 0 560 420" aria-hidden="true"><defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8fd6e8"/><stop offset="1" stop-color="#fff1c9"/></linearGradient>
+        <symbol id="pp" viewBox="0 0 40 50"><path d="M20 30C14 20 16 8 20 2c4 6 6 18 0 28z" fill="#2f8f4e"/><ellipse cx="20" cy="36" rx="7" ry="10" fill="#ffc531"/><path d="M14 31l12 10M14 41l12-10" stroke="#d99a12" stroke-width="1"/><path d="M20 27l-3-8 3 3 3-3z" fill="#2f8f4e"/>
+        <path d="M20 40C8 38 2 28 3 14c7 6 14 14 17 26zM20 40C32 38 38 28 37 14c-7 6-14 14-17 26z" fill="#46b265"/><path d="M20 47C10 49 3 44 0 36c8 1 16 4 20 11zM20 47C30 49 37 44 40 36c-8 1-16 4-20 11z" fill="#3aa35a"/></symbol></defs>
+        <rect width="560" height="420" rx="30" fill="url(#sky)"/>
+        <g transform="translate(450 84)"><g class="spin" stroke="#ffc531" stroke-width="6" stroke-linecap="round"><path d="M0-52v-14M0 52v14M-52 0h-14M52 0h14M37-37l10-10M-37 37l-10 10M37 37l10 10M-37-37l-10-10"/></g><circle r="36" fill="#ffc531"/></g>
+        <g class="cloud"><ellipse cx="110" cy="80" rx="46" ry="16" fill="#fff"/><ellipse cx="140" cy="68" rx="28" ry="16" fill="#fff"/><ellipse cx="86" cy="70" rx="22" ry="12" fill="#fff"/></g>
+        <g class="cloud c2"><ellipse cx="320" cy="140" rx="38" ry="12" fill="#fff" opacity=".9"/><ellipse cx="345" cy="130" rx="22" ry="12" fill="#fff" opacity=".9"/></g>
+        <path d="M0 250Q90 190 190 225T380 210T560 235V420H0z" fill="#b9e07c"/><path d="M0 285Q140 235 280 262T560 255V420H0z" fill="#6cc05a"/>
+        <g stroke="#9fdc7c" stroke-width="2" opacity=".55"><path d="M280 262L20 420M280 262L110 420M280 262L200 420M280 262L280 420M280 262L360 420M280 262L450 420M280 262L540 420"/></g>
+        <g id="plants"></g></svg>
+      <div class="pc a"><small>Soil moisture</small><b>38%</b><i><u style="width:38%"></u></i></div>
+      <div class="pc b"><small>Grade A forecast</small><b>68%</b><i><u style="width:68%"></u></i></div>
+      <div class="pc c"><small>Harvest in</small><b>94 days</b></div>
+      <div class="pc d"><small>⚠ South-east zone</small><b>Needs water</b></div>
+    </div>
+  </div>
+  <div class="ticker"><div class="track"><span>AI Phenology</span><span>◆</span><span>Crop Health Map</span><span>◆</span><span>Real-Time Twinning</span><span>◆</span><span>Quality classes A · B · C</span><span>◆</span><span>Growth forecast</span><span>◆</span><span>Smart recommendations</span><span>◆</span>
+    <span>AI Phenology</span><span>◆</span><span>Crop Health Map</span><span>◆</span><span>Real-Time Twinning</span><span>◆</span><span>Quality classes A · B · C</span><span>◆</span><span>Growth forecast</span><span>◆</span><span>Smart recommendations</span><span>◆</span></div></div>
+
+  <div class="wrap"><h2 class="sec rv">How it works</h2>
+    <div class="steps"><div class="step t-sun rv"><b>1</b><h3>Pin a place</h3><p>Search or click anywhere on the world map and choose how large an area to model.</p></div>
+      <div class="step t-sky rv" style="--d:.1s"><b>2</b><h3>We build the twin</h3><p>Real elevation and satellite imagery become a 3D landscape, planted with your crop.</p></div>
+      <div class="step t-lime rv" style="--d:.2s"><b>3</b><h3>Monitor, forecast, act</h3><p>See conditions, preview harvest quality and get clear actions for every zone.</p></div></div></div>
+
+  <div class="wrap" id="features"><h2 class="sec rv">What's inside each section</h2>
+    <div class="frow"><div class="copy rv"><span class="chip t-sky">Real-Time Twin</span><h3>See the field as it is right now</h3>
+        <ul class="ticks"><li>Walk through a 3D model with individual plants and fruit</li><li>Live weather and soil moisture, zone by zone</li><li>Click any plant to inspect its health and what to do</li><li>Problems list with recommended actions</li></ul><a class="btn deep" href="#twin">Open Real-Time Twin</a></div>
+      <div class="mock m-twin rv" style="--d:.12s"><div class="iso"><span class="sens s1"></span><span class="sens s2"></span><span class="sens s3"></span></div><div class="pc e"><small>Temperature</small><b>29 °C</b></div><div class="pc f"><small>Selected plant</small><b>Health 84%</b></div></div></div>
+    <div class="frow rev"><div class="copy rv"><span class="chip t-sun">AI Phenology</span><h3>Preview the crop before it happens</h3>
+        <ul class="ticks"><li>Even young plants show how they will look at each stage</li><li>Slide through 520 days or press Play to watch the crop grow</li><li>Harvest date, yield and fruit weight forecast</li><li>"What if" scenarios: dry spell or extra fertilizer</li></ul><a class="btn deep" href="#phenology">Open AI Phenology</a></div>
+      <div class="mock m-pheno rv" style="--d:.12s"><div class="stages"><i>Plant</i><i>Grow</i><i>Flower</i><i>Fruit</i><i>Harvest</i></div><div class="prog"><span></span></div>
+        <svg class="grow" viewBox="0 0 40 50" width="150" height="188"><use href="#pp"/></svg><div class="pc g"><small>Harvest</small><b>14 Feb</b></div></div></div>
+    <div class="frow"><div class="copy rv"><span class="chip t-coral">Crop Health Map</span><h3>Know the quality without walking every row</h3>
+        <ul class="ticks"><li>Quality class A, B or C for every zone</li><li>Compare today with the forecast at harvest time</li><li>A rover path layer, ready for real rover data</li><li>Percentages per class to plan your harvest</li></ul><a class="btn deep" href="#health">Open Crop Health Map</a></div>
+      <div class="mock m-heat rv" style="--d:.12s"><div class="heat"><span class="rover"></span></div><div class="legend"><b class="a">Class A</b><b class="b">Class B</b><b class="c">Class C</b></div></div></div>
+  </div>
+
+  <div class="wrap"><h2 class="sec rv">Everything in one place</h2>
+    <div class="fgrid">
+      <div class="fc rv"><svg viewBox="0 0 24 24"><path d="M12 21s7-6.2 7-11a7 7 0 10-14 0c0 4.8 7 11 7 11zM12 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z"/></svg><h4>Pin any place</h4><p>Search or click the OpenStreetMap world map.</p></div>
+      <div class="fc rv" style="--d:.05s"><svg viewBox="0 0 24 24"><path d="M12 3l9 5-9 5-9-5 9-5zM3 13l9 5 9-5"/></svg><h4>Real 3D terrain</h4><p>Elevation and satellite imagery as a textured model.</p></div>
+      <div class="fc rv" style="--d:.1s"><svg viewBox="0 0 24 24"><path d="M12 21v-8M12 13c0-4 3-6 7-6 0 4-3 6-7 6zM12 15c0-3-2-5-6-5 0 3 2 5 6 5z"/></svg><h4>Plants &amp; fruit</h4><p>Thousands of individual plants that ripen by stage.</p></div>
+      <div class="fc rv" style="--d:.15s"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><h4>Growth timeline</h4><p>Slide or play through the whole crop cycle.</p></div>
+      <div class="fc rv"><svg viewBox="0 0 24 24"><path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z"/></svg><h4>Quality classes</h4><p>A, B and C grading per zone, now and at harvest.</p></div>
+      <div class="fc rv" style="--d:.05s"><svg viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 1112 0v5l2 2H4l2-2zM10 21h4"/></svg><h4>Smart actions</h4><p>Advice for every stage and every problem zone.</p></div>
+      <div class="fc rv" style="--d:.1s"><svg viewBox="0 0 24 24"><path d="M7 18a4 4 0 010-8 5 5 0 019.5-1A4.5 4.5 0 0117 18H7z"/></svg><h4>Live weather &amp; soil</h4><p>7-day forecast and soil moisture from Open-Meteo.</p></div>
+      <div class="fc rv" style="--d:.15s"><svg viewBox="0 0 24 24"><path d="M5 3l14 7-6 2-2 6-6-15z"/></svg><h4>Click to inspect</h4><p>Select any plant for its health and next step.</p></div>
+      <div class="fc rv"><svg viewBox="0 0 24 24"><path d="M3 7h7l2 2h9v10H3z"/></svg><h4>Multiple fields</h4><p>Save, switch and reopen fields any time.</p></div>
+      <div class="fc rv" style="--d:.05s"><svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M4 20h16"/></svg><h4>Reports</h4><p>Export a CSV or print a field report.</p></div>
+      <div class="fc rv" style="--d:.1s"><svg viewBox="0 0 24 24"><path d="M4 8h4l2-3h4l2 3h4v11H4zM12 17a3.5 3.5 0 100-7 3.5 3.5 0 000 7z"/></svg><h4>Image snapshots</h4><p>Save the current 3D view as a picture.</p></div>
+      <div class="fc rv" style="--d:.15s"><svg viewBox="0 0 24 24"><path d="M5 9h14v9H5zM9 13h.01M15 13h.01M12 9V5M9 5h6"/></svg><h4>Rover-ready</h4><p>Built to take real rover and YOLO detections.</p></div>
+    </div></div>
+
+  <div class="band"><div class="wrap nums"><div class="rv"><b>100k</b><span>plants per field</span></div><div class="rv" style="--d:.08s"><b>1.5 km</b><span>maximum area radius</span></div><div class="rv" style="--d:.16s"><b>520</b><span>day growth timeline</span></div><div class="rv" style="--d:.24s"><b>3</b><span>quality classes</span></div></div></div>
+  <div class="wrap"><div class="endcta rv"><h2>Ready to meet your field's twin?</h2><p>It takes about a minute to build your first one.</p><a class="btn deep big" href="#fields">Start with a field</a></div></div>
+  <footer><p>PineTwin · Terrain: AWS Terrarium · Imagery: Esri · Weather: Open-Meteo · © OpenStreetMap contributors</p><p>Health, quality and forecast values are simulated until rover data is connected.</p></footer>
+</section>
+
+<!-- ================= APP PAGES ================= -->
+<section class="page" id="dashboard" hidden>
+  <div id="dashEmpty" class="card empty"><h2>No field yet</h2><p class="mute">Create your first field and your dashboard will fill with live information.</p><a class="btn deep" href="#fields">Add a field</a></div>
+  <div id="dashFull" hidden>
+    <div class="head"><div><h2 id="dashTitle"></h2><p id="dashSub" class="mute"></p></div><div class="actions"><button class="btn line" id="csv">Export CSV</button><button class="btn line" onclick="print()">Print report</button></div></div>
+    <div class="kpis"><div class="card kpi t-lime"><span>Crop health</span><div id="kHealth"></div></div><div class="card kpi t-sun"><span>Days to harvest</span><b id="kDays" class="num"></b></div>
+      <div class="card kpi t-sky"><span>Predicted Grade A</span><b id="kGrade" class="num"></b></div><div class="card kpi t-coral"><span>Active alerts</span><b id="kAlerts" class="num"></b></div></div>
+    <div class="grid2"><div class="card"><h3>Field overview <small>health, simulated</small></h3><canvas id="cvDash"></canvas></div>
+      <div class="card"><h3>Alerts &amp; recommendations</h3><div id="alertList" class="list"></div></div></div>
+    <div class="card"><h3>7-day weather <small>live · Open-Meteo</small></h3><div id="weather" class="wx"></div></div>
+  </div>
+</section>
+
+<section class="page" id="twin" hidden>
+  <div class="grid3">
+    <aside class="card side"><h3>Zones</h3><div id="zones" class="list"></div><h3>Layers</h3>
+      <label><input type="checkbox" id="tPlants" checked> Plants</label><label><input type="checkbox" id="tFruit" checked> Fruit</label>
+      <label><input type="checkbox" id="tStress"> Stress colours</label><label><input type="checkbox" id="tObjects" checked> Buildings &amp; trees</label>
+      <label>Detail <select id="detail"><option value="1">High</option><option value="2" selected>Medium</option><option value="4">Low</option></select></label></aside>
+    <div class="slot" id="slotTwin"><div id="viewbox"><div id="view"></div>
+      <div id="tools"><button class="vbtn" data-view="close">Close-up</button><button class="vbtn" data-view="overview">Overview</button><button class="vbtn" data-view="top">Top-down</button><button class="vbtn" id="snap">Save image</button></div>
+      <div id="hintbar">Click any plant to inspect it</div><div id="empty">The 3D twin will appear here.</div></div></div>
+    <aside class="card side"><h3>Selected plant</h3><div id="inspect" class="list"><div class="mute">Click a plant in the 3D view.</div></div>
+      <h3>Live status <small>weather &amp; soil live · crop sensors simulated</small></h3><div id="live" class="list"></div><h3>Problems &amp; actions</h3><div id="probList" class="list"></div></aside>
+  </div>
+</section>
+
+<section class="page" id="phenology" hidden>
+  <div class="card"><div id="timeline"></div></div>
+  <div class="grid2w"><div class="slot" id="slotPheno"></div>
+    <aside class="card side"><h3>Forecast <small>simulated model</small></h3><div id="fc" class="list"></div><svg id="curve" viewBox="0 0 300 110"></svg></aside></div>
+  <div class="card ctrl"><label>Planting date <input type="date" id="plantDate"></label><button class="btn line" id="play">▶ Play growth</button>
+    <input type="range" id="dap" min="0" max="520" value="200"><span id="dapLbl"></span><button class="btn line" id="today">Today</button>
+    <label>What if <select id="scen"><option value="normal">Normal</option><option value="dry">Dry spell</option><option value="fert">Extra fertilizer</option></select></label></div>
+</section>
+
+<section class="page" id="health" hidden>
+  <div class="grid3"><aside class="card side"><h3>Layers</h3>
+      <label><input type="radio" name="lay" value="health" checked> Health</label><label><input type="radio" name="lay" value="class"> Quality class now</label>
+      <label><input type="radio" name="lay" value="forecast"> Class at harvest (forecast)</label><p class="mute small">White dashed line = rover path (simulated). Health values are simulated until rover data is connected.</p></aside>
+    <div class="card"><canvas id="cvHealth"></canvas></div><aside class="card side"><h3>Quality</h3><div id="quality"></div></aside></div>
+</section>
+
+<section class="page" id="fields" hidden>
+  <div class="grid-f">
+    <div class="mapwrap"><div class="searchbox"><input id="q" type="search" placeholder="Search a place…"><button class="btn deep" id="search">Search</button></div><div id="map"></div></div>
+    <aside class="card side"><h3>New field</h3>
+      <label>Name<input id="fname" type="text" placeholder="e.g. Block A – Del Monte"></label>
+      <label>Area radius<select id="radius"><option>200</option><option selected>400</option><option>800</option><option>1500</option></select></label>
+      <p id="hint" class="mute small">Click the map to pin a field.</p>
+      <button class="btn deep big" id="go" disabled>Generate 3D twin</button>
+      <div id="prog" hidden><div class="bar"><i id="progBar"></i></div><p id="progMsg"></p><small id="progTime" class="mute"></small><button class="btn line" id="cancel">Stop waiting</button></div>
+      <h3>Saved fields</h3><div id="fieldList" class="list"></div></aside>
+  </div>
+</section>
+</main>
+<div id="toasts"></div>
+<script>
+(function(){
+  function show(m){var d=document.getElementById('errbar');if(!d){d=document.createElement('pre');d.id='errbar';d.style.cssText='position:fixed;z-index:9999;left:0;right:0;bottom:0;margin:0;padding:12px 16px;background:#7a1f12;color:#fff;font:13px/1.4 monospace;white-space:pre-wrap;max-height:45vh;overflow:auto';document.body.appendChild(d);}d.textContent+=m+'\n\n';}
+  addEventListener('error',function(e){if(e.target&&e.target!==window)show('FAILED TO LOAD: '+(e.target.src||e.target.href)+' (see the F12 Console for details)');else show('ERROR: '+e.message+(e.filename?'\n   at '+e.filename+':'+e.lineno:''));},true);
+  addEventListener('unhandledrejection',function(e){show('PROMISE ERROR: '+((e.reason&&e.reason.message)||e.reason));});
+  setTimeout(function(){if(!window.__ptBooted)show('The app scripts did not start (the landing page still works). Press F12 > Console and send the first red message.');},5000);
+  var g=document.getElementById('plants');if(g){var h='',rows=[[262,20,8],[292,28,7],[336,40,6],[396,56,5]];
+    rows.forEach(function(r,ri){for(var i=0;i<r[2];i++){var x=560*(i+.5)/r[2]+(ri%2?r[1]*.4:-r[1]*.4)-r[1]/2,w=r[1],hh=w*1.25;h+='<use href="#pp" class="sway" x="'+x.toFixed(1)+'" y="'+(r[0]-hh)+'" width="'+w+'" height="'+hh+'" style="animation-delay:-'+((i*.37+ri*.6)%3).toFixed(2)+'s"/>';}});g.innerHTML=h;}
+  var pages=['home','dashboard','twin','phenology','health','fields'];
+  function route(){var p=location.hash.slice(1);if(pages.indexOf(p)<0)p='home';pages.forEach(function(id){var s=document.getElementById(id);if(s)s.hidden=id!==p;});document.querySelectorAll('#nav .links a').forEach(function(a){a.classList.toggle('on',a.hash==='#'+p);});document.body.dataset.page=p;}
+  addEventListener('hashchange',function(){route();scrollTo(0,0);});route();
+  document.addEventListener('click',function(e){var t=e.target.closest&&e.target.closest('[data-scroll]');if(t){e.preventDefault();document.getElementById(t.dataset.scroll).scrollIntoView({behavior:'smooth'});}});
+  var els=document.querySelectorAll('.rv');
+  if('IntersectionObserver' in window){var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.12});els.forEach(function(el){io.observe(el);});}
+  else els.forEach(function(el){el.classList.add('in');});
+})();
+</script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script type="module" src="js/app.js"></script></body></html>
