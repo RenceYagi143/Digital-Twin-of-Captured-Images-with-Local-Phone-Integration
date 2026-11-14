@@ -4,6 +4,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from backend.terrain_engine import build_twin
+from backend import field_services as fs
 
 ROOT = Path(__file__).resolve().parent.parent
 FIELDS = ROOT / "storage" / "fields"; FIELDS.mkdir(parents=True, exist_ok=True)
@@ -60,6 +61,35 @@ def delete(fid: str):
     if not re.fullmatch(r"[a-f0-9]{8}", fid): raise HTTPException(400, "Bad id")
     shutil.rmtree(FIELDS / fid, ignore_errors=True)
     return {"ok": True}
+
+
+def _bad(ex): return HTTPException(502, f"{type(ex).__name__}: {ex}")
+
+
+@app.get("/api/weather")
+def weather(lat: float, lon: float, plant: str, horizon: int = 720):
+    try: return {"days": fs.weather_series(lat, lon, plant, min(max(horizon, 60), 900))}
+    except Exception as ex: raise _bad(ex)
+
+
+@app.get("/api/market/places")
+def places(lat: float, lon: float):
+    try: return {"places": fs.nearby_places(lat, lon)}
+    except Exception as ex: raise _bad(ex)
+
+
+@app.get("/api/ndvi/{fid}")
+def ndvi(fid: str):
+    if not re.fullmatch(r"[a-f0-9]{8}", fid): raise HTTPException(400, "Bad id")
+    d = FIELDS / fid; mp = d / "meta.json"
+    if not mp.exists(): raise HTTPException(404, "Unknown field")
+    cp = d / "ndvi.json"
+    if cp.exists() and time.time() - cp.stat().st_mtime < 86400: return json.loads(cp.read_text())
+    m = json.loads(mp.read_text())
+    try: out = fs.ndvi(m["lat"], m["lon"], m["radius"])
+    except Exception as ex: raise _bad(ex)
+    if out.get("grid"): cp.write_text(json.dumps(out))
+    return out
 
 
 app.mount("/storage", StaticFiles(directory=ROOT / "storage"), name="storage")
